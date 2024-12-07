@@ -15,8 +15,8 @@ class Random(TemplateView):
     def __init__(self):
         # Define file paths relative to the project base directory
         self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.branch_file = os.path.join(self.base_dir, r'V:\net_banking_portal\random-branches.csv')
-        self.address_file = os.path.join(self.base_dir, r'V:\net_banking_portal\addresses.csv')
+        self.branch_file = os.path.join(self.base_dir, r'V:\bank_project\random-branches.csv')
+        self.address_file = os.path.join(self.base_dir, r'V:\bank_project\addresses.csv')
 
     def getRandomBranch(self):
         try:

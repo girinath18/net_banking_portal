@@ -17,7 +17,7 @@ class ExchangeRateView(View):
 
     def get_exchange_rate_data(self, base_currency):
         """Fetch exchange rate data from the external API."""
-        URL = "https://api.exchangerate.host/live?access_key=e3b795b244ae5a88e506c7ef1276d644"
+        URL = "https://api.exchangeratesapi.io/latest"
         try:
             # API call with the base currency
             response = req.get(url=URL, params={"base": base_currency})
@@ -47,10 +47,6 @@ class ExchangeRateView(View):
         # Fetch rates from the database
         try:
             query = er.objects.all()
-            
-            if not query:
-                return JsonResponse({"error": "No exchange rates found in the database."}, status=500)
-            
             last_update = query[0].get_exchange_rate()['updated']
             rates = {query[i].currency: query[i].get_exchange_rate()['rate'] for i in range(len(query))}
 
@@ -75,26 +71,9 @@ class ExchangeRateRawView(View):
         base_currency = "EUR"
         api_data = ExchangeRateView().get_exchange_rate_data(base_currency)
 
-        # Log the full API response for debugging
-        print("API Response:", api_data)
-
-        # Check if there's an error in the response
         if "error" in api_data:
             return JsonResponse(api_data, status=500)
 
-        # Handle missing 'quotes' key or unexpected response structure
-        if "quotes" not in api_data:
-            return JsonResponse({"error": "'quotes' key not found in the API response"}, status=500)
-
-        # Extract the exchange rates from 'quotes' (e.g., 'USDEUR', 'USDGBP', etc.)
-        quotes = api_data["quotes"]
-        rates = {
-            "USD/EUR": quotes.get("USDEUR"),
-            "USD/GBP": quotes.get("USDGBP"),
-            "USD/JPY": quotes.get("USDJPY"),
-            "USD/RUB": quotes.get("USDRUB"),
-            "USD/CNY": quotes.get("USDCNY")
-        }
-
-        # Return the extracted exchange rates
+        # Extract required rates
+        rates = {key: api_data["rates"].get(key) for key in ["RUB", "CNY", "USD", "GBP", "JPY"]}
         return JsonResponse({"source": "api", **rates})
